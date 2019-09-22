@@ -117,6 +117,26 @@ class QmyMainWindow(QMainWindow):
         splitter.addWidget(figCanvas)  # 右侧FigureCanvas对象
         self.setCentralWidget(splitter)
 
+    def __createFigure1(self):           # 创建面板
+        self.__fig = mpl.figure.Figure()
+        figCanvas = FigureCanvas(self.__fig)  # 创建FigureCanvas对象，必须传递一个Figure对象
+        self.__fig.suptitle("显示", fontsize=16, fontweight='bold')  # 总的图标题
+        # naviToolbar = NavigationToolbar(figCanvas, self)  # 创建工具栏
+        # naviToolbar.setToolButtonStyle(Qt.ToolButtonTextUnderIcon)  # ToolButtonTextUnderIcon,ToolButtonTextBesideIcon
+        #
+        # self.addToolBar(naviToolbar)  # 添加工具栏到主窗口
+        self.setCentralWidget(figCanvas)
+
+        splitter1 = QSplitter(Qt.Vertical)
+        splitter1.addWidget(self.ui.verticalLayoutWidget)
+        splitter1.addWidget(self.ui.horizontalLayoutWidget)
+
+        splitter = QSplitter(self)
+        splitter.setOrientation(Qt.Horizontal)
+        splitter.addWidget(splitter1)  # 左侧控制面板
+        splitter.addWidget(figCanvas)  # 右侧FigureCanvas对象
+        self.setCentralWidget(splitter)
+
     @pyqtSlot()  ##"选择初至文件"
     def on_pushButton_clicked(self):
         curPath = QDir.currentPath()  # 获取系统当前目录
@@ -127,7 +147,7 @@ class QmyMainWindow(QMainWindow):
         self.fbpath =filename[0]
 
     def __drawFB(self):  ##初始化绘图初至
-
+        self.__createFigure1()
         ax1 = self.__fig.add_subplot(1, 1, 1, label="FB")  # 子图1
         ax1.cla()
         x1 = self.data['RcvLine']*10000
@@ -152,38 +172,41 @@ class QmyMainWindow(QMainWindow):
     @pyqtSlot()  ##"打开另一个ui，并连接新ui的信号与主窗口槽函数"
     def on_pushButton_4_clicked(self):
         self.newDialog = Qmydialog_sps()
-        self.newDialog.mySignal.connect(self.__drawSPS)
+        self.newDialog.mySignal.connect(self.__dqSPS)
         # self.newDialog.mySignal.connect(self.__drawSPS)
         self.newDialog.exec_()
 
-    def __drawSPS(self, connect):   ##绘制sps
-        portion = os.path.splitext(connect)
+    def __dqSPS(self, connect):   ##绘制sps
 
+        self.portion = os.path.splitext(connect)
 
+    def __drawSPS(self):
         # a = pd.read_csv(open(connect),header=None,sep='\s+',encoding="gbk")
         # b = pd.read_csv(open(portion[0] + '.S'),header=None,sep='\s+',encoding="gbk")
-        R = sps.Sps_sr(connect)
-        S = sps.Sps_sr(portion[0] + '.S')
+        R = sps.Sps_sr(self.portion[0] + '.R')
+        S = sps.Sps_sr(self.portion[0] + '.S')
         # print(a)
         # print(b)
-        ax1 = self.__fig.add_subplot(1, 1, 1, label="sps")  # 子图1
-        ax1.cla()
+        ax2 = self.__fig.add_subplot(1, 1, 1, label="sps")  # 子图1
+        ax2.cla()
         # x1 = a[1]
         # x2 = b[1]
         # y1 = a[2]
         # y2 = b[2]
-        ax1.scatter(R.X, R.Y, c='b', marker='x', label="R", s=0.5)  # 绘制一条曲线
-        ax1.scatter(S.X, S.Y, c='r', marker='x', label="S", s=0.5)  # 绘制一条曲线
-        ax1.set_xlabel('X 轴')  # X轴标题
-        ax1.set_ylabel('Y 轴')  # Y轴标题
-        ax1.get_xaxis().get_major_formatter().set_useOffset(False)
+        ax2.scatter(R.X, R.Y, c='b', marker='x', label="R", s=0.5)  # 绘制一条曲线
+        ax2.scatter(S.X, S.Y, c='r', marker='x', label="S", s=0.5)  # 绘制一条曲线
+        ax2.set_xlabel('X 轴')  # X轴标题
+        ax2.set_ylabel('Y 轴')  # Y轴标题
+        ax2.get_xaxis().get_major_formatter().set_useOffset(False)
         # ax1.set_xlim([0, 10])  # X轴坐标范围
         # ax1.set_ylim([-1.5, 1.5])  # Y轴坐标范围
-        ax1.set_title("观测系统")
-        ax1.legend()  # 自动创建图例
+        ax2.set_title("观测系统")
+        ax2.legend()  # 自动创建图例
 
     @pyqtSlot()  ##点击绘制sps
     def on_pushButton_7_clicked(self):
+        self.__createFigure1()
+        self.__drawSPS()
         self.__fig.canvas.draw()
 
 
@@ -197,6 +220,7 @@ class QmyMainWindow(QMainWindow):
         self.danpaochuzhi()
         self.__fig.canvas.draw()
     def danpaochuzhi(self):
+        self.__createFigure1()
         ffid =int(self.ui.lineEdit.text())
         ax1 = self.__fig.add_subplot(1, 1, 1, label="FB")  # 子图1
         ax1.cla()
