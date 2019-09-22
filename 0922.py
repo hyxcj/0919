@@ -201,7 +201,7 @@ class QmyMainWindow(QMainWindow):
         # ax1.set_xlim([0, 10])  # X轴坐标范围
         # ax1.set_ylim([-1.5, 1.5])  # Y轴坐标范围
         ax2.set_title("观测系统")
-        ax2.legend()  # 自动创建图例
+        ax2.legend()  # 自动创建图
 
     @pyqtSlot()  ##点击绘制sps
     def on_pushButton_7_clicked(self):
